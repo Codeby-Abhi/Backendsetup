@@ -43,5 +43,8 @@ const videoSchema = new Schema({
 
 },{timestamps: true})
 
+//what is the purpose of this plugin?
+//mongoose-aggregate-paginate-v2 is a plugin for Mongoose that adds pagination support to MongoDB aggregation queries. It allows you to easily paginate the results of an aggregation pipeline, making it easier to work with large datasets in a more efficient way.
+ 
 videoSchema.plugin(mongooseAggregatePaginate)
 export const Video = mongoose.model("Video", videoSchema)  
