@@ -20,4 +20,12 @@ app.use(express.static("public"))
 //can access and set cookies of user from server, only server can perfrom CRUD on it 
 app.use(cookieParser())
 
+//routes import
+import userRoutes from "./routes/user.routes.js"
+
+//routes declaration
+//will use app.use because router is saperated from app either we can use app.get or app.post etc
+app.use("/api/v1/users", userRoutes)
+
+
 export { app }
