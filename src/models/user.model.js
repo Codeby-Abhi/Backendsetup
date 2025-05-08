@@ -71,7 +71,7 @@ userSchema.pre("save", async function (next) {
 
     //hash is function to encrypt password it took 2 arguments 1st is password and 2nd is salt rounds
     //salt rounds is the cost of hashing the password. The higher the number, the more secure the password will be.
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
