@@ -1,5 +1,9 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import dotenv from "dotenv"
+dotenv.config({
+    path: './.env'
+})
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,6 +23,7 @@ const uploadOncloudinary = async (localFilePath) => {
         //message to be displayed if the file is uploaded successfully
         // and it returns the url of the file
         console.log('File uploaded successfully', response.url);
+        fs.unlinkSync(localFilePath)
         return response;
     } catch (error) {
         //it remove the file from local storage if the upload fails
@@ -26,17 +31,5 @@ const uploadOncloudinary = async (localFilePath) => {
         return null
     }
 }
-
-const uploadResult = await cloudinary.uploader
-    .upload(
-        'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-        public_id: 'shoes',
-    }
-    )
-    .catch((error) => {
-        console.log(error);
-    });
-
-console.log(uploadResult);
 
 export { uploadOncloudinary };

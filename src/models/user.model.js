@@ -65,9 +65,8 @@ const userSchema = new Schema({
 
 userSchema.pre("save", async function (next) {
     //if password is not modified then skip hashing
-    if(!this.isModified("password")) {
-        return next()
-    }
+    if(!this.isModified("password")) return next();
+    
 
     //hash is function to encrypt password it took 2 arguments 1st is password and 2nd is salt rounds
     //salt rounds is the cost of hashing the password. The higher the number, the more secure the password will be.
@@ -100,7 +99,7 @@ userSchema.methods.generateAccessToken = function (){
             _id: this._id,
             email: this.email,
             username: this.username, 
-            fullname: this.fullname,
+            fullname: this.fullname
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
