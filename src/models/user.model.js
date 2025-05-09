@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 //this is a user model for the user collection in the database
 //it is used to create a user schema and model for the user collection in the database
 const userSchema = new Schema({
-    username: {
+    userName: {
         type: String,
         required: true,
         unique: true,
@@ -21,7 +21,7 @@ const userSchema = new Schema({
         lowercase: true,
         trim: true,
     },
-    fullname: {
+    fullName: {
         type: String,
         required: true,
         trim: true,
