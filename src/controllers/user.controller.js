@@ -4,6 +4,29 @@ import { User } from "../models/user.model.js";
 import { uploadOncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
+
+//this is method to generate access and refresh token
+const generateRefreshAndAccessToken = async(userId) => {
+    try {
+        const user = await User.findById(userId)
+        const access = user.generateAccessToken()
+        const refresh = user.generateRefreshToken()
+
+        //store refresh token in the database
+        user.refreshToken = refresh
+        //.save() is a mongodb method to save the user object
+        await user.save({validateBeforeSave: false})
+
+        return {
+            access,
+            refresh
+        }
+
+    } catch (error) {
+        throw new ApiError(500, "Internal server error while generating tokens")
+    }
+}
+
 const registerUser = asyncHandler(async (req, res) => {
     // get user details from frontend
     // validation that its not empty
@@ -15,7 +38,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // check for user creation
     // send the response to the frontend
 
-    const {fullName, email, userName, password} = req.body
+    const { fullName, email, userName, password } = req.body
     console.log("mail :", email)
 
     // if(fullName === ""){
@@ -48,7 +71,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar and cover are required")
     }
 
-    const avatar = await uploadOncloudinary(avatarLocalPath) 
+    const avatar = await uploadOncloudinary(avatarLocalPath)
     const cover = await uploadOncloudinary(coverLocalPath)
 
     if (!avatar || !cover) {
@@ -60,7 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
         avatar: avatar.url,
         cover: cover?.url || "",
         email,
-        userName :userName.toLowerCase(),
+        userName: userName.toLowerCase(),
         password,
     })
 
@@ -75,8 +98,69 @@ const registerUser = asyncHandler(async (req, res) => {
     return res.status(201).json(
         new ApiResponse(201, createdUser, "User created successfully")
     )
-
-
 })
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+    //req body => data
+    //username or password
+    //find the user
+    //check the password
+    //if not match => throw error
+    //if match => create refresh token and access token
+    //send cookies
+
+    const { email, userName, password } = req.body
+
+    if (!userName || !email) {
+        throw new ApiError(400, "Username or email are required")
+    }
+
+    const user = await User.findOne({
+        //find the user by email or username
+        $or: [{ userName }, { email }]
+    })
+
+    if (!user) {
+        throw new ApiError(404, "user not found")
+    }
+
+    const ispasswordValid = await user.ispasswordCorrect(password)
+
+    if (!ispasswordValid) {
+        throw new ApiError(400, "Invalid password")
+    }
+
+    //get access and refresh by destructiong from the function
+    const {access, refresh } = await generateRefreshAndAccessToken(user._id) 
+
+    const logedinUser = await user.findById(user._id).selecet("-password -refreshToken")
+
+    const options = {
+        //this made cookie modified by server only
+        httpOnly: true,
+        secure: true
+    }
+
+    //set the cookie in the response
+    return res.status(200).cookie("access", access, options).cookie("refresh", refresh, options).json(
+        new ApiResponse(200, logedinUser, "User logged in successfully")
+    )
+})
+
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {$set: {refreshToken: undefined}},{new: true}
+    )
+    const options = {
+        //this made cookie modified by server only
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200).clearCookie("access", options).clearCookie("refresh", options).json(new ApiResponse(200, {}, "User logged out successfully"))
+})
+
+
+
+export { registerUser, loginUser, logoutUser }; 
