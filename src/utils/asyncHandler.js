@@ -1,3 +1,4 @@
+//its just a wrapper function thus we dont have to rewrite async/await and try/catch
 //using promise 
 const asyncHandler = (requestHandler) => {
     return (req, res, next) => {
@@ -19,7 +20,7 @@ export { asyncHandler };
 // const asyncHandler = (fn) => async () => {}
 
 
-//its just a wrapper function thus we dont have to rewrite async/await and try/catch
+
 // only used for try/catch
 // const asyncaHandler = (fn) => async(req,res,next) => {
 //     try {

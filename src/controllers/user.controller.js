@@ -208,5 +208,50 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken }; 
+    //user is changing pass means its already loggedin
+    //we got access to user from authmiddleware and find the user and store ref to user
+    const user = await User.findById(req.user?._id)
+
+    //checking password if is correct or not with the function created in usermodel
+    const isPasswordCorrect = await user.ispasswordCorrect(oldPassword)
+
+    //if password is not correct throw error
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "password is incorrect")
+    }
+
+    user.password = newPassword
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200).json(new ApiResponse(200, {}, "password change successfully"))
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    return res.status(200).json(200, req.use, "user fatched.")
+})
+
+const UpdateDetailes = asyncHandler(async (req, res) => {
+    const { fullName, email } = req.body
+
+    if (!fullName || !email) {
+        throw new ApiError(400, "all field require")
+    }
+
+    const user = User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName: fullName,
+                email: email
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, user, "detailes updated"))
+})
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateDetailes }; 
