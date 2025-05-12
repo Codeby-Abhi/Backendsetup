@@ -254,10 +254,10 @@ const UpdateDetailes = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user, "detailes updated"))
 })
 
-const updateUserAvatar = asyncHandler(async (req,res)=>{
+const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.files?.path
 
-    if(!avatarLocalPath){
+    if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is missing")
     }
 
@@ -270,19 +270,19 @@ const updateUserAvatar = asyncHandler(async (req,res)=>{
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 avatar: avatar.url
             }
-        }, {new: true}
+        }, { new: true }
     ).select("-password")
 
     return res.status(200).json(new ApiResponse(200, user, "avatar updated"))
 })
 
-const updateUserCover = asyncHandler(async (req,res)=>{
+const updateUserCover = asyncHandler(async (req, res) => {
     const coverLocalPath = req.files?.path
 
-    if(!coverLocalPath){
+    if (!coverLocalPath) {
         throw new ApiError(400, "cover is missing")
     }
 
@@ -295,13 +295,80 @@ const updateUserCover = asyncHandler(async (req,res)=>{
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 cover: cover.url
             }
-        }, {new: true}
+        }, { new: true }
     ).select("-password")
 
     return res.status(200).json(new ApiResponse(200, user, "cover updated"))
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateDetailes, updateUserAvatar, updateUserCover }; 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    //get the userName from the params 
+    const { userName } = req.params
+
+    if (!userName?.trim()) {
+        throw new ApiError(400, "userName is required")
+    }
+
+    //aggregate is a mongodb method to join the two collections
+    //{} is a pipelines we can use multiple pipelines
+    const channel = await User.aggregate([
+        {
+            $match: {
+                userName: userName?.toLowerCase()
+
+            }
+        },
+        {
+            $lookup: {
+                from: "sbscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "sbscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribeTo"
+            }
+        },
+        {
+            $addFields: {
+                // $ user before the field name
+                subscribersCount: { $size: "$subscribers" },
+                subscribeToCount: { $size: "$subscribeTo" },
+                issubscribed: {
+                    if: {
+                        $in: [req.user?._id, "$subscribers.subscriber"]
+                    }, then: true,
+                    else: false
+                }
+            }
+        },
+        {
+            $project: {
+                // 1 means include the field
+                fullName: 1,
+                userName: 1,
+                subscribersCount: 1,
+                subscribeToCount: 1,
+                issubscribed: 1,
+                avatar: 1,
+                cover: 1,
+            }
+        }
+    ])
+    
+    if (!channel?.length) {
+        throw new ApiError(404, "channel not found")
+    }
+
+    return res.status(200).json(new ApiResponse(200, channel[0], "channel profile fetched"))
+})
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateDetailes, updateUserAvatar, updateUserCover, getUserChannelProfile }; 
