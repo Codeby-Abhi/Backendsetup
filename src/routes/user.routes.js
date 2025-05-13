@@ -7,7 +7,9 @@ import {
     changeCurrentPassword,
     getCurrentUser,
     UpdateDetailes,
-    getWatchHistory
+    getWatchHistory,
+    updateUserAvatar,
+    updateUserCover
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwears/multer.middelwear.js";
 import { verifyJWT } from "../middelwears/auth.middlewear.js";
@@ -40,8 +42,8 @@ router.route("/current-user").get(verifyJWT, getCurrentUser)
 
 //patch is used to update only resources
 router.route("/updateAccDetails").patch(verifyJWT, UpdateDetailes)
-router.route("/avatarUpdate").patch(verifyJWT, upload.single("avatar"), UpdateDetailes)
-router.route("/coverUpdate").patch(verifyJWT, upload.single("cover"), UpdateDetailes)
+router.route("/avatarUpdate").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+router.route("/coverUpdate").patch(verifyJWT, upload.single("cover"), updateUserCover)
 router.route("/c/:userName").get(verifyJWT, getCurrentUser)
 router.route("/watchHistory").get(verifyJWT, getWatchHistory)
 export default router
