@@ -1,5 +1,14 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser, refreshAccessToken } from "../controllers/user.controller.js";
+import {
+    loginUser,
+    logoutUser,
+    registerUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    UpdateDetailes,
+    getWatchHistory
+} from "../controllers/user.controller.js";
 import { upload } from "../middelwears/multer.middelwear.js";
 import { verifyJWT } from "../middelwears/auth.middlewear.js";
 
@@ -26,5 +35,13 @@ router.route("/login").post(loginUser)
 //secured router
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refresh").post(refreshAccessToken)
+router.route("/chanege-password").post(verifyJWT, changeCurrentPassword)
+router.route("/current-user").get(verifyJWT, getCurrentUser)
 
+//patch is used to update only resources
+router.route("/updateAccDetails").patch(verifyJWT, UpdateDetailes)
+router.route("/avatarUpdate").patch(verifyJWT, upload.single("avatar"), UpdateDetailes)
+router.route("/coverUpdate").patch(verifyJWT, upload.single("cover"), UpdateDetailes)
+router.route("/c/:userName").get(verifyJWT, getCurrentUser)
+router.route("/watchHistory").get(verifyJWT, getWatchHistory)
 export default router

@@ -304,7 +304,7 @@ const updateUserCover = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user, "cover updated"))
 })
 
-const getUserChannelProfile = asyncHandler(async (req, res) => {
+const getUserChannelProfile = asyncHandler(async (req, res) => { 
     //get the userName from the params 
     const { userName } = req.params
 
@@ -363,7 +363,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             }
         }
     ])
-    
+
     if (!channel?.length) {
         throw new ApiError(404, "channel not found")
     }
@@ -371,4 +371,48 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, channel[0], "channel profile fetched"))
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateDetailes, updateUserAvatar, updateUserCover, getUserChannelProfile }; 
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                //made a mongoose object id from string
+                //mongoose is not working with aggregation pipeline is request directly
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            //nested pipeline
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline:[ {
+                    $lookup: {
+                        from: "users",
+                        localField: "owner",
+                        foreignField: "_id",
+                        as: "owner",
+                        pipeline: {
+                            //stores in owner field
+                            $project: {
+                                fullName: 1,
+                                userName: 1,
+                                avatar: 1
+                            }
+                        }
+                    }
+                },{
+
+                    $addFields: {
+                        owner: {$first: "$owner"}
+                    }
+                }]
+            }
+        }
+    ])
+
+    return res.status(200).json(new ApiResponse(200, user[0]?.watchHistory, "watch history fetched"))
+})
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateDetailes, updateUserAvatar, updateUserCover, getUserChannelProfile, getWatchHistory }; 
