@@ -151,7 +151,15 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
-        { $set: { refreshToken: undefined } }, { new: true }
+        {
+            $unset:
+            {
+                refreshToken: 1
+            }
+        },
+        {
+            new: true
+        }
     )
     const options = {
         //this made cookie modified by server only
@@ -304,7 +312,7 @@ const updateUserCover = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user, "cover updated"))
 })
 
-const getUserChannelProfile = asyncHandler(async (req, res) => { 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
     //get the userName from the params 
     const { userName } = req.params
 
@@ -387,7 +395,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                 localField: "watchHistory",
                 foreignField: "_id",
                 as: "watchHistory",
-                pipeline:[ {
+                pipeline: [{
                     $lookup: {
                         from: "users",
                         localField: "owner",
@@ -402,10 +410,10 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                             }
                         }
                     }
-                },{
+                }, {
 
                     $addFields: {
-                        owner: {$first: "$owner"}
+                        owner: { $first: "$owner" }
                     }
                 }]
             }
