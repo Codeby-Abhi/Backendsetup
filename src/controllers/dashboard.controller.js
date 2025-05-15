@@ -9,6 +9,10 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 const getChannelStats = asyncHandler(async (req, res) => {
     const channelId = req.user._id;
 
+    if (!mongoose.Types.ObjectId.isValid(channelId)) {
+        throw new ApiError(400, "Invalid channel id");
+    }
+
     // Total videos
     const totalVideos = await Video.countDocuments({ user: channelId });
 
@@ -36,6 +40,10 @@ const getChannelStats = asyncHandler(async (req, res) => {
 const getChannelVideos = asyncHandler(async (req, res) => {
     const channelId = req.user._id;
     const { page = 1, limit = 10 } = req.query;
+
+    if (!mongoose.Types.ObjectId.isValid(channelId)) {
+        throw new ApiError(400, "Invalid channel id");
+    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const total = await Video.countDocuments({ user: channelId });
