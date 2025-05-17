@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
-import { Comment } from "../models/comment.model.js"
-import { ApiError } from "../utils/ApiError.js"
+import { Comment } from "../models/comments.model.js"
+import { ApiError } from "../utils/apiErrors.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 

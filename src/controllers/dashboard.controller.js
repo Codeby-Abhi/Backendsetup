@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
 import { Video } from "../models/video.model.js"
-import { Subscription } from "../models/subscription.model.js"
-import { Like } from "../models/like.model.js"
-import { ApiError } from "../utils/ApiError.js"
+import { Subcription } from "../models/subcription.model.js"
+import { Like } from "../models/likes.model.js"
+import { ApiError } from "../utils/apiErrors.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
@@ -21,7 +21,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const totalViews = videos.reduce((sum, video) => sum + (video.views || 0), 0);
 
     // Total subscribers
-    const totalSubscribers = await Subscription.countDocuments({ channel: channelId });
+    const totalSubscribers = await Subcription.countDocuments({ channel: channelId });
 
     // Total likes (sum likes on all videos)
     const videoIds = videos.map(v => v._id);

@@ -1,10 +1,10 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Video } from "../models/video.model.js"
 import { User } from "../models/user.model.js"
-import { ApiError } from "../utils/ApiError.js"
+import { ApiError } from "../utils/apiErrors.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { uploadOncloudinary } from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -57,7 +57,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     // Upload video to Cloudinary
     let uploadResult;
     try {
-        uploadResult = await uploadOnCloudinary.uploader.upload(req.file.path, {
+        uploadResult = await uploadOncloudinary.uploader.upload(req.file.path, {
             resource_type: "video",
             folder: "videos"
         });
@@ -149,7 +149,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     //delete video from cloudinary
     try {
         if (video.cloudinaryPublicId) {
-            await uploadOnCloudinary.uploader.destroy(video.cloudinaryPublicId, { resource_type: "video" });
+            await uploadOncloudinary.uploader.destroy(video.cloudinaryPublicId, { resource_type: "video" });
         }
     } catch (cloudErr) {
         return res.status(500).json(new ApiResponse(false, "Failed to delete video from Cloudinary", null));
